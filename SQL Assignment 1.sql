@@ -113,12 +113,12 @@ order by HOUR;
 -- BOPIS (Buy Online, Pickup In Store) is a key retail strategy. Finance wants to know the revenue from BOPIS orders for the previous year.
 select 
     count(*) as TOTAL_ORDER,
-    sum(oh.GRAND_TOTAL )
+    sum(oh.GRAND_TOTAL)
 from order_header oh 
-join order_item_ship_group oisg 
-on oh.ORDER_ID = oisg.ORDER_ID  
+join shipment s 
+on oh.ORDER_ID = s.PRIMARY_ORDER_ID
 where oh.SALES_CHANNEL_ENUM_ID="WEB_SALES_CHANNEL" 
-and oisg.SHIPMENT_METHOD_TYPE_ID = "STOREPICKUP"
+and s.SHIPMENT_METHOD_TYPE_ID = "STOREPICKUP"
 and oh.ORDER_DATE>="2023-01-01" and oh.ORDER_DATE<="2023-12-31";
 
 
