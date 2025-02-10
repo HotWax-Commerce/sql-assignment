@@ -39,18 +39,18 @@ group by PRODUCT_ID;
 -- Question-5
 -- After running similar reports for a previous month, you now need all completed orders in August 2023 for analysis.
 select 
-	p.PRODUCT_ID ,
-	p.PRODUCT_TYPE_ID,
-	psc.PRODUCT_STORE_ID,
-	p.INTERNAL_NAME,
-	oi.QUANTITY,
-	oisg.FACILITY_ID,
-	f.FACILITY_TYPE_ID,
-	oi.EXTERNAL_ID,
-	oi.ORDER_ID,
-	oi.ORDER_ITEM_SEQ_ID,
-	oi.SHIP_GROUP_SEQ_ID,
-	oh.ORDER_HISTORY_ID 
+    p.PRODUCT_ID ,
+    p.PRODUCT_TYPE_ID,
+    psc.PRODUCT_STORE_ID,
+    p.INTERNAL_NAME,
+    oi.QUANTITY,
+    oisg.FACILITY_ID,
+    f.FACILITY_TYPE_ID,
+    oi.EXTERNAL_ID,
+    oi.ORDER_ID,
+    oi.ORDER_ITEM_SEQ_ID,
+    oi.SHIP_GROUP_SEQ_ID,
+    oh.ORDER_HISTORY_ID 
 from order_item oi
 join order_status os on (os.ORDER_ID = oi.ORDER_ID and os.STATUS_ID="ORDER_COMPLETED" and (os.STATUS_DATETIME > "2023-08-01" and os.STATUS_DATETIME<"2023-09-01"))
 join order_item_ship_group oisg on (oi.ORDER_ID = oisg.ORDER_ID and oi.SHIP_GROUP_SEQ_ID = oisg.SHIP_GROUP_SEQ_ID)
@@ -63,10 +63,10 @@ join facility f on f.FACILITY_ID = oisg.FACILITY_ID ;
 -- Question-7
 -- Finance teams need to see new orders and their payment methods for reconciliation and fraud checks
 select
-	oh.ORDER_ID,
-	p.AMOUNT as TOTAL_AMOUNT,
-	opp.PAYMENT_METHOD_ID, 
-	oh.EXTERNAL_ID as SHOPIFY_ORDER_ID
+    oh.ORDER_ID,
+    p.AMOUNT as TOTAL_AMOUNT,
+    opp.PAYMENT_METHOD_ID, 
+    oh.EXTERNAL_ID as SHOPIFY_ORDER_ID
 from order_header oh 
 join order_payment_preference opp on oh.ORDER_ID=opp.ORDER_ID
 join payment p on opp.ORDER_PAYMENT_PREFERENCE_ID=p.PAYMENT_PREFERENCE_ID;
