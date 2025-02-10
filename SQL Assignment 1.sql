@@ -72,7 +72,54 @@ join order_payment_preference opp on oh.ORDER_ID=opp.ORDER_ID
 join payment p on opp.ORDER_PAYMENT_PREFERENCE_ID=p.PAYMENT_PREFERENCE_ID;
 
 
+-- 8 Payment Captured but Not Shipped(not completed)
+-- Finance teams want to ensure revenue is recognized properly. If payment is captured but no shipment has occurred, it warrants further review.
+select 
+    oh.ORDER_ID,
+    oh.STATUS_ID,
+    p.STATUS_ID,
+    s.STATUS_ID 
+from  shipment s 
+join order_header oh on oh.ORDER_ID = s.PRIMARY_ORDER_ID
+join order_payment_preference opp on s.PRIMARY_ORDER_ID =opp.ORDER_ID
+join payment p on p.PAYMENT_PREFERENCE_ID = opp.ORDER_PAYMENT_PREFERENCE_ID
+where p.STATUS_ID="PMNT_RECEIVED" and s.STATUS_ID!="SHIPMENT_SHIPPED";
 
+
+
+--- Question-9
+-- Operations teams may want to see how orders complete across the day to schedule staffing.
+
+-- hour trend for all order_date
+select 
+    hour(oh.ORDER_DATE) as HOUR, 
+    count(*) as TOTAL_ORDERS 
+from order_header oh 
+group by HOUR 
+order by HOUR;
+
+-- For a specific date
+select 
+    hour(oh.ORDER_DATE) as HOUR, 
+    count(*) as TOTAL_ORDERS 
+from order_header oh 
+where date(oh.ORDER_DATE) ="2024-11-11"
+group by HOUR 
+order by HOUR;
+
+
+
+-- Question-10
+-- BOPIS (Buy Online, Pickup In Store) is a key retail strategy. Finance wants to know the revenue from BOPIS orders for the previous year.
+select 
+    count(*) as TOTAL_ORDER,
+    sum(oh.GRAND_TOTAL )
+from order_header oh 
+join order_item_ship_group oisg 
+on oh.ORDER_ID = oisg.ORDER_ID  
+where oh.SALES_CHANNEL_ENUM_ID="WEB_SALES_CHANNEL" 
+and oisg.SHIPMENT_METHOD_TYPE_ID = "STOREPICKUP"
+and oh.ORDER_DATE>="2023-01-01" and oh.ORDER_DATE<="2023-12-31";
 
 
 
