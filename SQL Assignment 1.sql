@@ -122,5 +122,17 @@ and s.SHIPMENT_METHOD_TYPE_ID = "STOREPICKUP"
 and oh.ORDER_DATE>="2023-01-01" and oh.ORDER_DATE<="2023-12-31";
 
 
+-- Question-11
+-- The merchandising team needs to know how many orders were canceled in the previous month and their reasons.
+select 
+count(*) as TOTAL_ORDER, 
+os.CHANGE_REASON 
+from order_header oh 
+join order_status os 
+on oh.ORDER_ID= os.ORDER_ID 
+where oh.STATUS_ID = "ORDER_CANCELLED" and (date(oh.ORDER_DATE)>="2024-10-31" and date(oh.ORDER_DATE)<="2024-11-30")
+group by os.CHANGE_REASON;
+
+
 
 
