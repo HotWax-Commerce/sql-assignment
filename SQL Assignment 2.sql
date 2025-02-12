@@ -79,3 +79,46 @@ select PRODUCT_ID, INTERNAL_NAME, TOTAL_QUANTITY_SOLD, CITY, REVENUE from PRODUC
 where TOTAL_QUANTITY_SOLD > AVG_QUANTITY 
 order by TOTAL_QUANTITY_SOLD desc;
 
+
+
+
+-- Question-4
+-- Warehouse managers need to track “shrinkage” such as lost or damaged inventory to reconcile physical vs. system counts.
+select 
+	ii.INVENTORY_ITEM_ID,
+	ii.PRODUCT_ID,
+	ii.FACILITY_ID,
+	sum(iid.AVAILABLE_TO_PROMISE_DIFF),
+	iid.REASON_ENUM_ID,
+	date(iid.CREATED_STAMP) as DATE
+from inventory_item_detail iid 
+join inventory_item ii on(ii.INVENTORY_ITEM_ID = iid.INVENTORY_ITEM_ID)
+where iid.REASON_ENUM_ID is not null;
+
+
+-- Question-5
+-- Low Stock or Out of Stock Items Report
+-- Avoiding out-of-stock situations is critical. This report flags items that have fallen below a certain reorder threshold or have zero available stock.
+-- PRODUCT_ID
+-- PRODUCT_NAME
+-- FACILITY_ID
+-- QOH (Quantity on Hand)
+-- ATP (Available to Promise)
+-- REORDER_THRESHOLD
+-- DATE_CHECKED
+
+
+-- Question-6
+-- The business wants to know where open orders are currently assigned, whether in a physical store or a virtual facility (e.g., a distribution center or online fulfillment location).
+select
+	oh.ORDER_ID,
+	oh.STATUS_ID,
+	f.FACILITY_ID,
+	f.FACILITY_NAME,
+	f.FACILITY_TYPE_ID
+from order_header oh 
+join order_item_ship_group oisg on(oh.ORDER_ID = oisg.ORDER_ID)
+join facility f on(oisg.FACILITY_ID = f.FACILITY_ID)
+where oh.STATUS_ID="ORDER_APPROVED";
+
+
