@@ -93,10 +93,6 @@ order by ri.RETURN_QUANTITY desc;
 
 -- Question-7 Store with Most One-Day Shipped Orders (Last Month)
 -- Identify which facility (store) handled the highest volume of “one-day shipping” orders in the previous month, useful for operational benchmarking.
--- FACILITY_ID
--- FACILITY_NAME
--- TOTAL_ONE_DAY_SHIP_ORDERS
--- REPORTING_PERIOD
 select 
 	s.ORIGIN_FACILITY_ID as FACILITY_ID,
 	f.FACILITY_NAME,
@@ -109,6 +105,30 @@ group by s.ORIGIN_FACILITY_ID
 order by TOTAL_ONE_DAY_SHIP_ORDERS desc limit 1;
 
 
+-- Question 8 List of Warehouse Pickers
+-- Warehouse managers need a list of employees responsible for picking and packing orders to manage shifts, productivity, and training needs.
+select
+	p.PARTY_ID,
+	p.FIRST_NAME,
+	pr.ROLE_TYPE_ID,
+	p2.FACILITY_ID,
+	case  when pr.THRU_DATE < current_date() then 'INACTIVE' else 'ACTIVE'end as STATUS
+from picklist_role pr 
+join person p on pr.PARTY_ID = p.PARTY_ID
+join picklist p2 on p2.PICKLIST_ID = pr.PICKLIST_ID;
+
+
+-- Question-9 Total Facilities That Sell the Product
+-- Retailers want to see how many (and which) facilities (stores, warehouses, virtual sites) currently offer a product for sale.
+select
+	pf.PRODUCT_ID,
+	p.PRODUCT_NAME,
+	count(pf.FACILITY_ID) as FACILITY_COUNT,
+	group_concat(pf.FACILITY_ID order by pf.FACILITY_ID separator ', ') as FACILITY_LIST 
+from product_facility pf 
+join product p on p.PRODUCT_ID = pf.PRODUCT_ID
+group by pf.PRODUCT_ID
+order by FACILITY_COUNT desc;
 
 
 
