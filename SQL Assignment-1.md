@@ -83,3 +83,30 @@ and gi.ID_VALUE is null;
 
 **Total Query Cost: 830242**
 
+
+<p><h3>4. Product IDs Across Systems</h3>
+Business Problem:
+To sync an order or product across multiple systems (e.g., Shopify, HotWax, ERP/NetSuite), the OMS needs to know each system’s unique identifier for that product. This query retrieves the Shopify ID, HotWax ID, and ERP ID (NetSuite ID) for all products.
+</p>
+Fields to Retrieve:
+- PRODUCT_ID (internal OMS ID)
+- SHOPIFY_ID
+- HOTWAX_ID
+- ERP_ID or NETSUITE_ID 
+
+```sql
+select 
+    gi.PRODUCT_ID,
+    max(case when gi.GOOD_IDENTIFICATION_TYPE_ID  = 'SHOPIFY_PROD_ID' then ID_VALUE end) as SHOPIFY_PROD_ID,
+    max(case when gi.GOOD_IDENTIFICATION_TYPE_ID = 'SHOPIFY_PROD_SKU' then ID_VALUE end) as SHOPIFY_PROD_SKU,
+    max(case when gi.GOOD_IDENTIFICATION_TYPE_ID = 'SKU' then ID_VALUE end) as SKU,
+    max(case when gi.GOOD_IDENTIFICATION_TYPE_ID = 'ERP_ID' then ID_VALUE end) as ERP_ID
+from good_identification as gi
+group by PRODUCT_ID;
+```
+**Explanation:** 
+<p>For a product there can be multiple records so grouped them all and to make it in single row the I have used CASE to apply conditions. There can be multiple values for a gi type so using an aggregate function max will return single but lexically largest id value.</p>
+
+**Total Query Cost: 271924**
+
+
