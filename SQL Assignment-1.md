@@ -14,14 +14,14 @@ Fields to Retrieve:
 
 ```sql
 select 
-per.PARTY_ID, 
-pr.CREATED_STAMP as ENTRY_DATE,
-per.FIRST_NAME,
-per.LAST_NAME,
-(select cm.INFO_STRING from contact_mech cm join party_contact_mech pcm 
-on per.PARTY_ID = pcm.PARTY_ID and cm.CONTACT_MECH_ID =pcm.CONTACT_MECH_ID and CONTACT_MECH_TYPE_ID ='EMAIL_ADDRESS' limit 1) as EMAIL,
-(select contact_number from telecom_number tn join party_contact_mech pcm  
-on pcm.party_id=per.party_id and tn.contact_mech_id = pcm.contact_mech_id limit 1) as PHONE
+  per.PARTY_ID, 
+  pr.CREATED_STAMP as ENTRY_DATE,
+  per.FIRST_NAME,
+  per.LAST_NAME,
+  (select cm.INFO_STRING from contact_mech cm join party_contact_mech pcm 
+  on per.PARTY_ID = pcm.PARTY_ID and cm.CONTACT_MECH_ID =pcm.CONTACT_MECH_ID and CONTACT_MECH_TYPE_ID ='EMAIL_ADDRESS' limit 1) as EMAIL,
+  (select contact_number from telecom_number tn join party_contact_mech pcm  
+  on pcm.party_id=per.party_id and tn.contact_mech_id = pcm.contact_mech_id limit 1) as PHONE
 from person as per
 join party_role as pr on per.PARTY_ID = pr.PARTY_ID and pr.role_type_id = 'CUSTOMER' and pr.CREATED_STAMP < "2023-07-01" and pr.CREATED_STAMP>="2023-06-01";
 ```
@@ -29,8 +29,8 @@ join party_role as pr on per.PARTY_ID = pr.PARTY_ID and pr.role_type_id = 'CUSTO
 <p> Used subqueries instead of joining the contact_mech table for email and phone details, as joins were resulting in duplicate records. Subqueries in SELECT clause gets executed individually for each matching record, preventing duplication.</p>
 
 **Total Query Cost: 4043**
+<hr>
 
-  
 <p><h3>2. List All Active Physical Products</h3>
 Business Problem:
 Merchandising teams often need a list of all physical products to manage logistics, warehousing, and shipping.
@@ -54,8 +54,7 @@ where pt.IS_PHYSICAL="Y";
 <p>The product type determines whether a product is physical or not. This query retrieves product details by joining the product table with the product type and filtering only those products where IS_PHYSICAL = 'Y'.</p>
 
 **Total Query Cost: 155962**
-
-
+<hr>
 
 <p><h3>3. Products Missing NetSuite ID</h3>
 Business Problem:
@@ -82,7 +81,7 @@ and gi.ID_VALUE is null;
 <p>Here using left join so that the product with missing ERP_ID will also be listed with products having ERP_ID as good identification type but null id value.</p>
 
 **Total Query Cost: 830242**
-
+<hr>
 
 <p><h3>4. Product IDs Across Systems</h3>
 Business Problem:
@@ -108,5 +107,52 @@ group by PRODUCT_ID;
 <p>For a product there can be multiple records so grouped them all and to make it in single row the I have used CASE to apply conditions. There can be multiple values for a gi type so using an aggregate function max will return single but lexically largest id value.</p>
 
 **Total Query Cost: 271924**
+<hr>
 
+<p><h3>5. Completed Orders in August 2023</h3>
+Business Problem:
+After running similar reports for a previous month, you now need all completed orders in August 2023 for analysis.
+</p>
+Fields to Retrieve:
+- PRODUCT_ID
+- PRODUCT_TYPE_ID
+- PRODUCT_STORE_ID
+- TOTAL_QUANTITY
+- INTERNAL_NAME
+- FACILITY_ID
+- EXTERNAL_ID
+- FACILITY_TYPE_ID
+- ORDER_HISTORY_ID
+- ORDER_ID
+- ORDER_ITEM_SEQ_ID
+- SHIP_GROUP_SEQ_ID
 
+```sql
+select 
+    p.PRODUCT_ID ,
+    p.PRODUCT_TYPE_ID,
+    psc.PRODUCT_STORE_ID,
+    p.INTERNAL_NAME,
+    oi.QUANTITY,
+    oisg.FACILITY_ID,
+    f.FACILITY_TYPE_ID,
+    oi.EXTERNAL_ID,
+    oi.ORDER_ID,
+    oi.ORDER_ITEM_SEQ_ID,
+    oi.SHIP_GROUP_SEQ_ID,
+    oh.ORDER_HISTORY_ID 
+from order_item oi
+join order_status os on (os.ORDER_ID = oi.ORDER_ID and os.STATUS_ID="ORDER_COMPLETED" and (os.STATUS_DATETIME > "2023-08-01" and os.STATUS_DATETIME<"2023-09-01"))
+join order_item_ship_group oisg on (oi.ORDER_ID = oisg.ORDER_ID and oi.SHIP_GROUP_SEQ_ID = oisg.SHIP_GROUP_SEQ_ID)
+join order_history oh on (oi.ORDER_ID=oh.ORDER_ID and oi.ORDER_ITEM_SEQ_ID= oh.ORDER_ITEM_SEQ_ID and oi.SHIP_GROUP_SEQ_ID= oh.SHIP_GROUP_SEQ_ID)
+join product p on p.PRODUCT_ID = oi.PRODUCT_ID
+join product_store_catalog psc on oi.PROD_CATALOG_ID = psc.PROD_CATALOG_ID
+join facility f on f.FACILITY_ID = oisg.FACILITY_ID ;
+
+```
+**Explanation:** 
+<p>
+  Started from order item and simply joined the tables as per required fields. 
+</p>
+
+**Total Query Cost: 96682**
