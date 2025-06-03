@@ -156,3 +156,32 @@ join facility f on f.FACILITY_ID = oisg.FACILITY_ID ;
 </p>
 
 **Total Query Cost: 96682**
+<hr>
+
+<p><h3>6. Newly Created Sales Orders and Payment Methods</h3>
+Business Problem:
+   Finance teams need to see new orders and their payment methods for reconciliation and fraud checks.
+</p>
+Fields to Retrieve:
+- ORDER_ID
+- TOTAL_AMOUNT
+- PAYMENT_METHOD
+- Shopify Order ID
+
+```sql
+select
+    oh.ORDER_ID,
+    p.AMOUNT as TOTAL_AMOUNT,
+    p.PAYMENT_METHOD_ID, 
+    oh.EXTERNAL_ID as SHOPIFY_ORDER_ID
+from order_header oh 
+join order_payment_preference opp on oh.ORDER_ID=opp.ORDER_ID
+join payment p on opp.ORDER_PAYMENT_PREFERENCE_ID=p.PAYMENT_PREFERENCE_ID;
+```
+**Explanation:** 
+<p>
+  In order payment preferences all prefered payment methods are listed and by joining it with payment we can get correct method for order.
+</p>
+
+**Total Query Cost: 78.55**
+<hr>
