@@ -185,3 +185,32 @@ join payment p on opp.ORDER_PAYMENT_PREFERENCE_ID=p.PAYMENT_PREFERENCE_ID;
 
 **Total Query Cost: 78.55**
 <hr>
+<hr>
+
+<p><h3>7. Payment Captured but Not Shipped</h3>
+Business Problem:
+ Finance teams want to ensure revenue is recognized properly. If payment is captured but no shipment has occurred, it warrants further review.
+</p>
+Fields to Retrieve:
+- ORDER_ID
+- ORDER_STATUS
+- PAYMENT_STATUS
+- SHIPMENT_STATUS
+
+```sql
+select 
+    oh.ORDER_ID,
+    oh.STATUS_ID,
+    opp.STATUS_ID,
+    s.STATUS_ID 
+from  shipment s 
+join order_header oh on oh.ORDER_ID = s.PRIMARY_ORDER_ID and s.STATUS_ID!="SHIPMENT_SHIPPED"
+join order_payment_preference opp on s.PRIMARY_ORDER_ID =opp.ORDER_ID and opp.STATUS_ID="PMNT_RECEIVED";
+```
+**Explanation:** 
+<p>
+  Started from shipment joined with orders, applied condition in the join itself as we are interested in un-shipped orders only then getting payment pref with received status
+</p>
+
+**Total Query Cost: 13.90**
+<hr>
