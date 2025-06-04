@@ -264,3 +264,27 @@ Joined order header to order_item_ship_group by order_id and simply applied filt
 
 **Total Query Cost: 1.2**
 <hr>
+
+<p><h3>10. Canceled Orders (Last Month)</h3>
+Business Problem:
+The merchandising team needs to know how many orders were canceled in the previous month and their reasons.
+</p>
+Fields to Retrieve:
+- TOTAL ORDERS
+- CANCELATION REASON
+
+```sql
+select 
+  count(*) as TOTAL_ORDER, 
+  os.CHANGE_REASON 
+from order_status os
+where os.status_id = 'ORDER_CANCELLED' and date(STATUS_DATETIME)<="2025-05-31" and date(STATUS_DATETIME)>"2025-04-30"
+group by os.CHANGE_REASON;
+```
+**Explanation:** 
+<p>
+  Query order_status directly as we just need the count of cancelled orders for a month.
+</p>
+
+**Total Query Cost: 13.64**
+<hr>
