@@ -214,3 +214,27 @@ join order_payment_preference opp on s.PRIMARY_ORDER_ID =opp.ORDER_ID and opp.ST
 
 **Total Query Cost: 13.90**
 <hr>
+
+<p><h3>8. Orders Completed Hourly</h3>
+Business Problem:
+  Operations teams may want to see how orders complete across the day to schedule staffing.
+</p>
+Fields to Retrieve:
+- TOTAL ORDERS
+- HOUR
+
+```sql
+select 
+    hour(oh.ORDER_DATE) as HOUR, 
+    count(*) as TOTAL_ORDERS 
+from order_header oh 
+group by HOUR 
+order by HOUR;
+```
+**Explanation:** 
+<p>
+Overall orders are fetched and grouped hourly as per ORDER_DATE.
+</p>
+
+**Total Query Cost: 1163.4**
+<hr>
