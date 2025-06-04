@@ -238,3 +238,29 @@ Overall orders are fetched and grouped hourly as per ORDER_DATE.
 
 **Total Query Cost: 1163.4**
 <hr>
+<p><h3>9. BOPIS Orders Revenue (Last Year)</h3>
+Business Problem:
+BOPIS (Buy Online, Pickup In Store) is a key retail strategy. Finance wants to know the revenue from BOPIS orders for the previous year.
+</p>
+Fields to Retrieve:
+- TOTAL ORDERS
+- TOTAL REVENUE
+
+```sql
+select 
+    count(*) as TOTAL_ORDER,
+    sum(oh.GRAND_TOTAL)
+from order_header oh 
+join order_item_ship_group oisg 
+on oh.ORDER_ID = oisg.ORDER_ID
+where oh.SALES_CHANNEL_ENUM_ID="WEB_SALES_CHANNEL" 
+and oisg.SHIPMENT_METHOD_TYPE_ID = "STOREPICKUP"
+and oh.ORDER_DATE>="2023-01-01" and oh.ORDER_DATE<="2023-12-31";
+```
+**Explanation:** 
+<p>
+Joined order header to order_item_ship_group by order_id and simply applied filters in the where clause for BOPIS orders shipment method should be "STOREPICKUP" 
+</p>
+
+**Total Query Cost: 1.2**
+<hr>
