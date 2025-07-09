@@ -29,6 +29,7 @@ join person per on(orr.PARTY_ID=per.PARTY_ID);
 ```
 **Explanation:** 
 <p> 
+	
 </p>
 
 **Total Query Cost: **
@@ -52,18 +53,20 @@ Fields to Retrieve:
 ```sql
 select
 	oh.ORDER_ID, ocm.CONTACT_MECH_ID, orr.PARTY_ID, concat(per.FIRST_NAME," ",per.LAST_NAME) as CUSTOMER_NAME, oh.STATUS_ID,
-  oh.GRAND_TOTAL as TOTAL_AMOUNT, ocm.CONTACT_MECH_PURPOSE_TYPE_ID, pa.ADDRESS1, pa.STATE_PROVINCE_GEO_ID, pa.POSTAL_CODE,oh.ORDER_DATE
+	ocm.CONTACT_MECH_PURPOSE_TYPE_ID, pa.ADDRESS1, pa.CITY, pa.COUNTRY_GEO_ID, pa.POSTAL_CODE, oh.ORDER_DATE
 from order_header oh 
-join order_contact_mech ocm on (oh.STATUS_ID="ORDER_COMPLETED" and oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
-join order_role orr on (oh.ORDER_ID = orr.ORDER_ID and orr.ROLE_TYPE_ID="PLACING_CUSTOMER")
-join postal_address pa on (ocm.CONTACT_MECH_ID = pa.CONTACT_MECH_ID and pa.STATE_PROVINCE_GEO_ID="NY")
+join order_status os on (oh.ORDER_ID = os.ORDER_ID and os.STATUS_ID="ORDER_COMPLETED" and os.STATUS_DATETIME>"2023-09-30" and os.STATUS_DATETIME<"2023-11-01")
+join order_contact_mech ocm on (oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
+join order_role orr on (oh.ORDER_ID = orr.ORDER_ID and orr.ROLE_TYPE_ID="SHIP_TO_CUSTOMER")
+join postal_address pa on (ocm.CONTACT_MECH_ID = pa.CONTACT_MECH_ID)
 join person per on(orr.PARTY_ID=per.PARTY_ID);
 ```
 **Explanation:** 
 <p> 
+Joined OrderStatus at the first to process only orders' with completed status, then connected with OCM for shipping location and OrderRole for ShipToCustomer
 </p>
 
-**Total Query Cost: **
+**Total Query Cost: 37513.8**
 <hr>
 <p>
   <h3>
@@ -87,7 +90,7 @@ select
 	max(pa.CITY) as CITY,
 	sum(oh.GRAND_TOTAL) as REVENUE
 from order_item oi 
-join order_header oh on (oi.ORDER_ID= oh.ORDER_ID and oh.STATUS_ID="ORDER_COMPLETED" and oh.ORDER_TYPE_ID="SALES_ORDER")
+join order_header oh on (oi.ORDER_ID= oh.ORDER_ID and oi.STATUS_ID="ITEM_COMPLETED" and oh.ORDER_TYPE_ID="SALES_ORDER")
 join order_contact_mech ocm on (oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
 join postal_address pa on (ocm.CONTACT_MECH_ID = pa.CONTACT_MECH_ID and pa.STATE_PROVINCE_GEO_ID="NY")
 join product p on p.PRODUCT_ID = oi.PRODUCT_ID
@@ -96,9 +99,10 @@ order by TOTAL_QUANTITY_SOLD desc limit 10;
 ```
 **Explanation:** 
 <p> 
+Queried orderItem to get SALES_ORDER's  items with COMPLETED status and then connected postalAddress via OCM to get ShippingLocation. At last joined product entity to get the internal name. Product entity may have a large volume of data so I joined it at the last, cosidering only the filtered ones. And the aggregate functions are used to calulate the same after grouping with productId
 </p>
 
-**Total Query Cost: **
+**Total Query Cost: 32,968**
 <p> These are the products sold above average and can be considered as best selling</p>
 
 ```sql
@@ -119,13 +123,15 @@ with PRODUCT_SALES as(
 )
 select PRODUCT_ID, INTERNAL_NAME, TOTAL_QUANTITY_SOLD, CITY, REVENUE from PRODUCT_SALES
 where TOTAL_QUANTITY_SOLD > AVG_QUANTITY 
-order by TOTAL_QUANTITY_SOLD desc;
+order by TOTAL_QUANTITY_SOLD desc
+LIMIT 10;
 ```
 **Explanation:** 
 <p> 
+	Here used CTE to first calculate the Averege quantity per product sold and then listed all the products which have total sold quantity greater than average, so we 
 </p>
 
-**Total Query Cost: **
+**Total Query Cost: 775.37**
 <hr>
 
 <p><h3>4. Store-Specific (Facility-Wise) Revenue</h3>
