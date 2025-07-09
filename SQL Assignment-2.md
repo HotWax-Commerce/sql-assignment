@@ -21,18 +21,18 @@ select
 	oh.ORDER_ID, ocm.CONTACT_MECH_ID, orr.PARTY_ID, concat(per.FIRST_NAME," ",per.LAST_NAME) as CUSTOMER_NAME, oh.STATUS_ID,
 	ocm.CONTACT_MECH_PURPOSE_TYPE_ID, pa.ADDRESS1, pa.CITY, pa.COUNTRY_GEO_ID, pa.POSTAL_CODE, oh.ORDER_DATE
 from order_header oh 
-join order_contact_mech ocm on (oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
 join order_status os on (oh.ORDER_ID = os.ORDER_ID and os.STATUS_ID="ORDER_COMPLETED" and os.STATUS_DATETIME>"2023-09-30" and os.STATUS_DATETIME<"2023-11-01")
+join order_contact_mech ocm on (oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
 join order_role orr on (oh.ORDER_ID = orr.ORDER_ID and orr.ROLE_TYPE_ID="SHIP_TO_CUSTOMER")
 join postal_address pa on (ocm.CONTACT_MECH_ID = pa.CONTACT_MECH_ID)
 join person per on(orr.PARTY_ID=per.PARTY_ID);
 ```
 **Explanation:** 
 <p> 
-	
+Joined OrderStatus at the first to process only orders' with completed status, then connected with OCM for shipping location and OrderRole for ShipToCustomer
 </p>
 
-**Total Query Cost: **
+**Total Query Cost: 37513.8**
 <hr>
 
 <p><h3>2. Orders from New York</h3>
@@ -51,22 +51,13 @@ Fields to Retrieve:
 - ORDER_STATUS
 
 ```sql
-select
-	oh.ORDER_ID, ocm.CONTACT_MECH_ID, orr.PARTY_ID, concat(per.FIRST_NAME," ",per.LAST_NAME) as CUSTOMER_NAME, oh.STATUS_ID,
-	ocm.CONTACT_MECH_PURPOSE_TYPE_ID, pa.ADDRESS1, pa.CITY, pa.COUNTRY_GEO_ID, pa.POSTAL_CODE, oh.ORDER_DATE
-from order_header oh 
-join order_status os on (oh.ORDER_ID = os.ORDER_ID and os.STATUS_ID="ORDER_COMPLETED" and os.STATUS_DATETIME>"2023-09-30" and os.STATUS_DATETIME<"2023-11-01")
-join order_contact_mech ocm on (oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
-join order_role orr on (oh.ORDER_ID = orr.ORDER_ID and orr.ROLE_TYPE_ID="SHIP_TO_CUSTOMER")
-join postal_address pa on (ocm.CONTACT_MECH_ID = pa.CONTACT_MECH_ID)
-join person per on(orr.PARTY_ID=per.PARTY_ID);
+
 ```
 **Explanation:** 
 <p> 
-Joined OrderStatus at the first to process only orders' with completed status, then connected with OCM for shipping location and OrderRole for ShipToCustomer
 </p>
 
-**Total Query Cost: 37513.8**
+**Total Query Cost: **
 <hr>
 <p>
   <h3>
