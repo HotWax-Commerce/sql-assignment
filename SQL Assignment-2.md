@@ -51,13 +51,21 @@ Fields to Retrieve:
 - ORDER_STATUS
 
 ```sql
-
+select
+	oh.ORDER_ID, ocm.CONTACT_MECH_ID,orr.PARTY_ID, concat(per.FIRST_NAME," ",per.LAST_NAME) as CUSTOMER_NAME,oh.STATUS_ID,
+	oh.GRAND_TOTAL as TOTAL_AMOUNT,ocm.CONTACT_MECH_PURPOSE_TYPE_ID, pa.ADDRESS1, pa.STATE_PROVINCE_GEO_ID, pa.POSTAL_CODE, oh.ORDER_DATE
+from order_header oh 
+join order_contact_mech ocm on (oh.STATUS_ID="ORDER_COMPLETED" and oh.ORDER_ID=ocm.ORDER_ID  and ocm.CONTACT_MECH_PURPOSE_TYPE_ID ="SHIPPING_LOCATION")
+join order_role orr on (oh.ORDER_ID = orr.ORDER_ID and orr.ROLE_TYPE_ID="PLACING_CUSTOMER")
+join postal_address pa on (ocm.CONTACT_MECH_ID = pa.CONTACT_MECH_ID and pa.STATE_PROVINCE_GEO_ID="NY")
+join person per on(orr.PARTY_ID=per.PARTY_ID);
 ```
 **Explanation:** 
 <p> 
+Joined orders to there contact_mech for SHIPPING_LOCATION and then postal address to make sure we take orderof NewYork only. For party realted information we have joined PLACING_CUSTOMER to the person.
 </p>
 
-**Total Query Cost: **
+**Total Query Cost: 53428**
 <hr>
 <p>
   <h3>
@@ -143,17 +151,18 @@ select
 	count(oisg.ORDER_ID ) total_orders,
 	sum(oh.GRAND_TOTAL) as REVENUE,
 	concat(min(date(oh.ORDER_DATE))," - ",max(date(oh.ORDER_DATE))) as DATE_RANGE
-from order_item_ship_group oisg
-join order_header oh on (oh.ORDER_ID = oisg.ORDER_ID and oh.STATUS_ID = "ORDER_COMPLETED" and oh.ORDER_TYPE_ID="SALES_ORDER")
+from order_header oh
+join order_item_ship_group oisg on (oh.ORDER_ID = oisg.ORDER_ID and oh.STATUS_ID = "ORDER_COMPLETED" and oh.ORDER_TYPE_ID="SALES_ORDER")
 join facility f2  on f2.FACILITY_ID = oisg.FACILITY_ID
 group by oisg.FACILITY_ID
 order by total_orders desc ;
 ```
 **Explanation:** 
 <p> 
+From orderItemShipGroup we can know order is assigned to which facilities, so joined orderHeader with oisg and then to facility. (For now sum of only order's grandTotal is considered as revenue)
 </p>
 
-**Total Query Cost: **
+**Total Query Cost: 49168**
 <hr>
 
 <p><h3>5. Lost and Damaged Inventory</h3>
