@@ -296,8 +296,9 @@ Retrieve all inventory levels for products at locations and include the facility
 - ATP (Available to Promise)
 
 ```sql
-
-
+select ii.PRODUCT_ID, ii.FACILITY_ID, f.FACILITY_TYPE_ID, sum(ii.QUANTITY_ON_HAND_TOTAL) as QUANTITY_ON_HAND, sum(ii.AVAILABLE_TO_PROMISE_TOTAL) as AVAILABLE_TO_PROMISE
+from inventory_item ii join facility f on ii.FACILITY_ID = f.FACILITY_ID and f.FACILITY_TYPE_ID != "VIRTUAL_FACILITY"
+group by ii.PRODUCT_ID, f.FACILITY_ID, f.FACILITY_TYPE_ID;
 ```
 **Explanation:** 
 <p> 
