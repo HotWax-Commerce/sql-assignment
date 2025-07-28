@@ -37,11 +37,7 @@ join order_status os on (oi.ORDER_ID = os.ORDER_ID and os.ORDER_ITEM_SEQ_ID = oi
 join product p on(oi.PRODUCT_ID = p.PRODUCT_ID)
 where p.PRODUCT_TYPE_ID not in ("DIGITAL_GOOD", "DONATION", "INSTALLATION_SERVICE", "SERVICE");
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 <p><h3>2. Completed Return Items</h3>
@@ -75,11 +71,7 @@ join return_item ri on (rh.RETURN_ID = ri.RETURN_ID)
 join order_header oh on (ri.ORDER_ID = oh.ORDER_ID)
 join order_status os on (oh.ORDER_ID = os.ORDER_ID and os.STATUS_ID = "ORDER_COMPLETED");
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 <p><h3>
   3. Single-Return Orders (Last Month)
@@ -99,11 +91,7 @@ from return_header rh
 join return_item ri on (rh.RETURN_ID = ri.RETURN_ID and ri.RETURN_QUANTITY = 1 and date(rh.RETURN_DATE)>"2023-11-30" and date(rh.RETURN_DATE) <"2024-01-01")
 join person p on (p.PARTY_ID = rh.FROM_PARTY_ID);
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 <p><h3>4. Returns and Appeasements</h3>
@@ -120,11 +108,7 @@ Fields to Retrieve:
 
 ```
 
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 <p><h3>5. Detailed Return Information</h3>
@@ -157,11 +141,7 @@ from return_header rh
 join return_adjustment ra on rh.RETURN_ID = ra.RETURN_ID
 join order_header oh on ra.ORDER_ID = oh.ORDER_ID;
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 <p><h3>6. Orders with Multiple Returns</h3>
@@ -190,12 +170,8 @@ where ri.RETURN_QUANTITY >1 and ri.STATUS_ID ="RETURN_COMPLETED"
 order by ri.RETURN_QUANTITY desc;
 ```
 
-**Explanation:** 
-<p> 
-</p>
-
-**Total Query Cost: **
 <hr>
+
 
 <p><h3>7. Store with Most One-Day Shipped Orders (Last Month)</h3>
 Business Problem:
@@ -219,11 +195,7 @@ where s.SHIPMENT_METHOD_TYPE_ID like "NEXT%" and (s.CREATED_DATE > "2024-12-31" 
 group by s.ORIGIN_FACILITY_ID
 order by TOTAL_ONE_DAY_SHIP_ORDERS desc limit 1;
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 <p><h3>8. List of Warehouse Pickers</h3>
@@ -248,11 +220,7 @@ from picklist_role pr
 join person p on pr.PARTY_ID = p.PARTY_ID
 join picklist p2 on p2.PICKLIST_ID = pr.PICKLIST_ID;
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 <p><h3>9. Total Facilities That Sell the Product</h3>
@@ -276,11 +244,7 @@ join product p on p.PRODUCT_ID = pf.PRODUCT_ID
 group by pf.PRODUCT_ID
 order by FACILITY_COUNT desc;
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
 
 
@@ -300,9 +264,28 @@ select ii.PRODUCT_ID, ii.FACILITY_ID, f.FACILITY_TYPE_ID, sum(ii.QUANTITY_ON_HAN
 from inventory_item ii join facility f on ii.FACILITY_ID = f.FACILITY_ID and f.FACILITY_TYPE_ID != "VIRTUAL_FACILITY"
 group by ii.PRODUCT_ID, f.FACILITY_ID, f.FACILITY_TYPE_ID;
 ```
-**Explanation:** 
-<p> 
-</p>
 
-**Total Query Cost: **
 <hr>
+
+<p><h3>12 Orders Without Picklist</h3>
+Business Problem:
+A picklist is necessary for warehouse staff to gather items. Orders missing a picklist might be delayed and need attention.
+</p>
+Fields to Retrieve: 
+- `ORDER_ID`  
+- `ORDER_DATE`  
+- `ORDER_STATUS`  
+- `FACILITY_ID`
+- `DURATION` (How long has the order been assigned at the facility)
+
+
+```sql
+SELECT 
+	oh.ORDER_ID, oh.STATUS_ID, oh.ORDER_DATE, 
+	oisg.FACILITY_ID, datediff( now(), oisg.CREATED_STAMP) as DURATION
+FROM order_header oh
+LEFT JOIN order_item_ship_grp_inv_res oisgir 
+on oh.ORDER_ID=oisgir.ORDER_ID
+JOIN order_item_ship_group oisg ON oh.ORDER_ID = oisg.ORDER_ID
+WHERE oisgir.RESERVED_DATETIME IS NULL AND oh.STATUS_ID="ORDER_APPROVED";
+```
