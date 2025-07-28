@@ -267,7 +267,7 @@ group by ii.PRODUCT_ID, f.FACILITY_ID, f.FACILITY_TYPE_ID;
 
 <hr>
 
-<p><h3>12 Orders Without Picklist</h3>
+<p><h3>11 Orders Without Picklist</h3>
 Business Problem:
 A picklist is necessary for warehouse staff to gather items. Orders missing a picklist might be delayed and need attention.
 </p>
